@@ -14,7 +14,7 @@ class GoogleMapProvider extends ChangeNotifier {
   bool isLoading = false;
 
   // UI
-  final List<Marker> markers = <Marker>[];
+  List<Marker> markers = <Marker>[];
   late final Completer<GoogleMapController> mapController = Completer();
   List<MarkerData> markerData = [];
   Map<PolylineId, Polyline> polylines = {};
@@ -87,7 +87,6 @@ class GoogleMapProvider extends ChangeNotifier {
       LocationApi.saveLocation(position);
       LatLng latLng = LatLng(position.latitude, position.longitude) ;
       addMarkerById(latLng,"1");
-      
     });
   }
 
@@ -118,8 +117,9 @@ class GoogleMapProvider extends ChangeNotifier {
       position: latLng,
     );
     }else {
-      addMarker(latLng);
+      addMarker(latLng,id);
     }
+    markers = List.from(markers);
     notifyListeners();
   }
 
@@ -133,7 +133,7 @@ class GoogleMapProvider extends ChangeNotifier {
           stopOver: true));
 
       PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-        'AIzaSyB4Ti-TjouJnZQE3JWF6fDdDsf1FWhKTC8',
+        'GOOGLE MAP KEY',
         PointLatLng(
             markers[i].position.latitude, markers[i].position.longitude),
         PointLatLng(markers[i + 1].position.latitude,
