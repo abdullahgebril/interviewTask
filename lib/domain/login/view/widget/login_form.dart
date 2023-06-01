@@ -35,7 +35,7 @@ class _LoginFormState extends State<LoginForm> {
                 hintText: "Phone Number",
                 isPassword: false,
                 obscureText: false,
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.text,
                 validate: (phone) {
                   if (phone!.isEmpty) {
                     return "Please enter your phone number";

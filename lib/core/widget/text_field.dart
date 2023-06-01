@@ -45,12 +45,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
       validator: widget.validate,
       decoration: widget.decoration ??
           InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(vertical:18.0,horizontal: 10),
+            contentPadding: const EdgeInsets.symmetric(vertical:15.0,horizontal: 10),
             hintText: widget.hintText,
             suffixIcon: Icon(
               widget.suffixIcon,
               color: Colors.black,
-              size: 22,
+              size: 18,
             ),
           ).applyDefaults(Theme.of(context).inputDecorationTheme),
     );

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:newtask/core/extension/media_values.dart';
-import 'package:newtask/domain/home/provider/home_provider.dart';
 import 'package:provider/provider.dart';
+
+import '../../provider/google_map_provider .dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,9 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
     googleMapProvider = GoogleMapProvider();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await googleMapProvider.getMarkers();
-      await googleMapProvider.getUserCurrentLocation();
+      await googleMapProvider.requestUserCurrentLocation();
     });
-    googleMapProvider.streamUSerLocation();
   }
   @override
   void dispose() {

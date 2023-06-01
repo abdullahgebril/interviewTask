@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "927797809289",
+    "project_id": "interviewtask-c8f32",
+    "storage_bucket": "interviewtask-c8f32.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:927797809289:android:9fe69b4a94f0ba573f7658",
+        "android_client_info": {
+          "package_name": "com.example.newtask"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhIaFgkq4GkZfvw0y8mR6VgZFDBUaz6yg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

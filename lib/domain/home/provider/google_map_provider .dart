@@ -4,34 +4,46 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:newtask/core/api/home_api/home_api.dart';
+import 'package:newtask/core/api/location/LocationApi.dart';
 import 'package:newtask/core/exception/api_exception.dart';
 import 'package:newtask/core/widget/flutter_toast.dart';
 import 'package:newtask/domain/home/data/model/marker_model.dart';
 
 class GoogleMapProvider extends ChangeNotifier {
+  // Variables
+  bool isLoading = false;
+
+  // UI
   final List<Marker> markers = <Marker>[];
   late final Completer<GoogleMapController> mapController = Completer();
-  bool isLoading = false;
   List<MarkerData> markerData = [];
   Map<PolylineId, Polyline> polylines = {};
   List<LatLng> polylineCoordinates = [];
-  late StreamSubscription<Position> positionStream;
-  List<PolylineWayPoint> polylineWayPoints = [];
-  PolylinePoints polylinePoints = PolylinePoints();
-  Position? _currentPosition;
   CameraPosition kGooglePlex = const CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 11,
   );
+  List<PolylineWayPoint> polylineWayPoints = [];
+  PolylinePoints polylinePoints = PolylinePoints();
+
+  // Objects
+  late StreamSubscription<Position> positionStream;
+  Position? _currentPosition;
+  final LocationSettings locationSettings = const LocationSettings(
+    accuracy: LocationAccuracy.high,
+   
+  );
+
+//provider Function
 
   Future<void> getMarkers() async {
     _setLoading(true);
     try {
       final markerResponse = await HomeApi.getMarkers();
-
       markerData = markerResponse.data;
-      drawMarkerOnMpa(markerData);
       _setLoading(false);
+
+      drawMarkerOnMap(markerData);
     } on ApiException catch (e) {
       // show toast with error message
       showFlutterToast(msg: e.error);
@@ -39,16 +51,17 @@ class GoogleMapProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> drawMarkerOnMpa(List<MarkerData> allMarkers) async {
+  Future<void> drawMarkerOnMap(List<MarkerData> allMarkers) async {
     for (var marker in allMarkers) {
       LatLng start =
           LatLng(double.parse(marker.lat), double.parse(marker.longt));
       addMarker(start);
     }
+    getDirections(markers);
   }
 
-  Future<void> getUserCurrentLocation() async {
-    requestAccessLocationPermission(getCurrentLocation);
+  Future<void> requestUserCurrentLocation() async {
+    requestAccessLocationPermission(listenToUserChangedLocation);
   }
 
   void requestAccessLocationPermission(Function onPermissionGranted) async {
@@ -59,27 +72,27 @@ class GoogleMapProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> getCurrentLocation() async {
-    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((position) => setCurrentLocation(position));
-  }
 
-  void streamUSerLocation() {
+
+  void listenToUserChangedLocation() {
     positionStream =
-        Geolocator.getPositionStream().listen((Position position) async {
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen((Position position) async {
       kGooglePlex = CameraPosition(
         target: LatLng(position.latitude, position.longitude),
         zoom: 14,
       );
       final GoogleMapController controller = await mapController.future;
       controller.animateCamera(CameraUpdate.newCameraPosition(kGooglePlex));
-      setCurrentLocation(position);
+      //  setCurrentLocation(position);
+      LocationApi.saveLocation(position);
+      LatLng latLng = LatLng(position.latitude, position.longitude) ;
+      addMarkerById(latLng,"1");
+      
     });
   }
 
   void setCurrentLocation(Position position) {
     _currentPosition = position;
-    
   }
 
   void _setLoading(bool loading) {
@@ -89,15 +102,25 @@ class GoogleMapProvider extends ChangeNotifier {
 
   Position? get currentPosition => _currentPosition;
 
-  addMarker(latLng) {
+  addMarker(latLng,[String? id ]) {
     markers.add(Marker(
+      consumeTapEvents: true,
+      markerId: MarkerId(id??latLng.toString()),
+      position: latLng,
+    ));
+  }
+  void addMarkerById(LatLng latLng , String id ){
+    var markerIndex = markers.indexWhere((element) => element.markerId == id);
+    if(markerIndex != -1 ){
+      markers[markerIndex] = Marker(
       consumeTapEvents: true,
       markerId: MarkerId(latLng.toString()),
       position: latLng,
-    ));
-    if (markers.length > 1) {
-      getDirections(markers);
+    );
+    }else {
+      addMarker(latLng);
     }
+    notifyListeners();
   }
 
 // This functions gets real road polyline routes
@@ -122,7 +145,7 @@ class GoogleMapProvider extends ChangeNotifier {
           polylineCoordinates.add(LatLng(point.latitude, point.longitude));
         });
       } else {
-        print(result.errorMessage);
+        debugPrint(result.errorMessage);
       }
     }
 
@@ -131,7 +154,7 @@ class GoogleMapProvider extends ChangeNotifier {
   }
 
   addPolyLine(List<LatLng> polylineCoordinates) {
-    PolylineId id = PolylineId("poly");
+    PolylineId id = const PolylineId("poly");
     Polyline polyline = Polyline(
       polylineId: id,
       color: Colors.blue,

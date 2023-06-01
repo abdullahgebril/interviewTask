@@ -32,9 +32,8 @@ class LoginProvider extends ChangeNotifier {
   }
 
   void navigateToHomeScreen(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+    Navigator.pushAndRemoveUntil(context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()), (_) => false);
+   
   }
 }
